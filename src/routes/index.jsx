@@ -42,17 +42,17 @@ function Index() {
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <WaterDropOutlinedIcon color="primary" />
               <Typography variant="overline" color="primary.main">
-                Plant pot monitor
+                Monitor de umidade
               </Typography>
             </Stack>
 
             <Typography component="h1" variant="h2" sx={{ fontWeight: 700, maxWidth: 560 }}>
-              Live soil moisture overview
+              Medição do sensor de umidade ao vivo
             </Typography>
 
             <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 720 }}>
-              A minimal frontend that highlights the latest moisture readings while leaving data
-              wiring open for your upcoming integration.
+              Exibição dos dados coletados pelo sensor de umidade do vaso inteligente, atualizado a
+              cada 7 segundos. Os dados de temperatura da cidade são atualizados ao carregar o site.
             </Typography>
           </Stack>
 

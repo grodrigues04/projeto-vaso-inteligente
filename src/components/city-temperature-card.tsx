@@ -5,36 +5,55 @@ import ThermostatOutlinedIcon from "@mui/icons-material/ThermostatOutlined";
 import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import { Box, Card, Chip, CircularProgress, Stack, Typography } from "@mui/material";
 
-const mockedWeatherResponse = {
-  city: "Copenhagen",
-  temperature: 19,
-  condition: "Mild breeze",
-  humidity: 58,
+type Weather = {
+  city: string;
+  temperature: number;
+  condition: string;
+  humidity: number;
 };
 
 export function CityTemperatureCard() {
-  const [weather] = useState(mockedWeatherResponse);
+  const [weather, setWeather] = useState<Weather | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setLoading(false);
-    }, 250);
+    async function load() {
+      try {
+        const response = await fetch(
+          "https://api.open-meteo.com/v1/forecast?latitude=-27.5954&longitude=-48.5480&current_weather=true&timezone=America%2FSao_Paulo",
+        );
 
-    return () => window.clearTimeout(timer);
+        const data = await response.json();
+
+        const rawHumidity = data?.current_weather?.humidity ?? 0;
+
+        const mapped: Weather = {
+          city: "Florianópolis",
+          temperature: Math.round(data.current_weather.temperature),
+          condition: "Condições atuais",
+          humidity: rawHumidity,
+        };
+
+        setWeather(mapped);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    load();
   }, []);
 
-  if (loading) {
+  if (loading || !weather) {
     return (
       <Card variant="outlined" sx={{ p: 3, borderRadius: 2 }}>
         <Stack spacing={2}>
           <Typography variant="overline" color="text.secondary">
-            City temperature
+            Cidade temperatura
           </Typography>
           <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
             <CircularProgress size={18} />
             <Typography variant="body2" color="text.secondary">
-              Loading current conditions…
+              Carregando dados do tempo...
             </Typography>
           </Stack>
         </Stack>
@@ -48,7 +67,7 @@ export function CityTemperatureCard() {
         <Stack direction="row" spacing={2} sx={{ justifyContent: "space-between" }}>
           <Box>
             <Typography variant="overline" color="text.secondary">
-              City temperature
+              Temperatura da cidade
             </Typography>
             <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
               <PlaceOutlinedIcon color="action" fontSize="small" />
@@ -56,7 +75,12 @@ export function CityTemperatureCard() {
             </Stack>
           </Box>
 
-          <Chip icon={<WbSunnyOutlinedIcon />} label={weather.condition} color="success" variant="outlined" />
+          <Chip
+            icon={<WbSunnyOutlinedIcon />}
+            label={weather.condition}
+            color="success"
+            variant="outlined"
+          />
         </Stack>
 
         <Stack direction="row" spacing={2} sx={{ alignItems: "center" }}>
@@ -66,15 +90,12 @@ export function CityTemperatureCard() {
               {weather.temperature}°C
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              Mocked API response for the current city reading
+              Temperatura atual
             </Typography>
           </Box>
         </Stack>
 
-        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}>
-          <Chip icon={<AirOutlinedIcon />} label={weather.condition} variant="outlined" />
-          <Chip icon={<WbSunnyOutlinedIcon />} label={`${weather.humidity}% humidity`} variant="outlined" />
-        </Stack>
+        <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: "wrap" }}></Stack>
       </Stack>
     </Card>
   );
