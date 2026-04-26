@@ -46,7 +46,7 @@ function Historico() {
   useEffect(() => {
     async function buscarHistorico() {
       try {
-        const response = await fetch('http://localhost:3000/historico');
+        const response = await fetch('https://projeto-vaso-backend.onrender.com/dados_atuais/historico');
         const data = await response.json();
         console.log('Dados do histórico:', data);
         processarDados(data.historico);
