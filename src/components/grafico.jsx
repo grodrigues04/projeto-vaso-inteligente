@@ -9,10 +9,11 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import Typography from '@mui/material/Typography';
-function Grafico() {
+import Stack from '@mui/material/Stack';
+
+function Grafico({callBackTemperatura}) {
     const [dados, setDados] = useState(null)
     const [lastItem, setLastItem] = useState(null)
-
     function formatarDataBrasil(dataISO) {
         const date = new Date(dataISO);
 
@@ -35,9 +36,10 @@ function Grafico() {
             umidade: formatarUmidade(item.umidade), 
             data: formatarDataBrasil(item.data)
         }))
-    
-        setLastItem(dadosProcessados[dadosProcessados.length - 1])
         setDados(dadosProcessados)
+    
+        const ultimaTemperaturaRegistrada = (dadosProcessados[dadosProcessados.length - 1])
+        callBackTemperatura(ultimaTemperaturaRegistrada)
     }
 
     useEffect(() => {
@@ -53,15 +55,16 @@ function Grafico() {
         
     return (
         <>
-            {dados && <ResponsiveContainer width="50%" height={300}>
-                <LineChart data={dados}>
-                    <XAxis dataKey="data" />
-                    <YAxis dataKey="umidade"/>
-                    <Tooltip />
-                    <Line type="monotone" dataKey="umidade" />
-                </LineChart>
-            </ResponsiveContainer>}
-            
+            {dados && 
+                    <ResponsiveContainer width="100%" height={300}>
+                        <LineChart data={dados}>
+                        <XAxis dataKey="data" />
+                        <YAxis dataKey="umidade"/>
+                        <Tooltip />
+                        <Line type="monotone" dataKey="umidade" />
+                    </LineChart>
+                </ResponsiveContainer>
+            }
         </>
         
     );
