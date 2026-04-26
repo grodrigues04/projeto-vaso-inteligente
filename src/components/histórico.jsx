@@ -1,33 +1,97 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid
+} from 'recharts';
 
-function Temperatura() {
-  const [weather, setWeather] = useState(null);
-  const [loading, setLoading] = useState(true);
-  console.log("Temperatura component renderizado", weather);
+function Historico() {
+  const [dados, setDados] = useState(null)
+
+  function formatarUmidade(umidade) {
+    return Math.round(((1024 - umidade) / 1023) * 100);
+  }
+
+  function formatarDataCompleta(timestamp) {
+    const date = new Date(timestamp);
+
+    if (isNaN(date)) return '';
+
+    return new Intl.DateTimeFormat('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(date);
+  }
+
+  function processarDados(data) {
+    const ordenado = [...data].sort(
+      (a, b) => new Date(a.data) - new Date(b.data)
+    );
+
+    const dadosProcessados = ordenado.map(item => ({
+      umidade: formatarUmidade(item.umidade),
+      timestamp: new Date(item.data).getTime()
+    }));
+
+    setDados(dadosProcessados);
+  }
+
   useEffect(() => {
-    const fetchData = async () => {
+    async function buscarHistorico() {
       try {
-        const response = await fetch(
-          "https://api.open-meteo.com/v1/forecast?latitude=-27.5954&longitude=-48.5480&current_weather=true&timezone=America%2FSao_Paulo"
-        );
-        const dados = await response.json();
-        setWeather(dados.current_weather);
-        setLoading(false);
+        const response = await fetch('http://localhost:3000/historico');
+        const data = await response.json();
+        console.log('Dados do histórico:', data);
+        processarDados(data.historico);
       } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-        setLoading(false);
+        console.error('Erro ao buscar histórico:', error);
       }
-    };
-    fetchData();
+    }
+    buscarHistorico()
+    const interval = setInterval(buscarHistorico, 10000)
   }, []);
 
-  if (loading) return <div className="loader">Carregando...</div>;
-
   return (
-    <div>
-      <h2>Temperatura atual: {weather.temperature}°C</h2>
-    </div>
+    <>
+      {dados && (
+        <ResponsiveContainer width="100%" height={350}>
+          <LineChart data={dados}>
+            <CartesianGrid strokeDasharray="3 3" />
+
+            <XAxis
+              dataKey="timestamp"
+              tickFormatter={formatarDataCompleta}
+              minTickGap={20}
+            />
+
+            <YAxis
+              domain={[0, 100]}
+              tickFormatter={(value) => `${value}%`}
+            />
+
+            <Tooltip
+              labelFormatter={(value) => formatarDataCompleta(value)}
+              formatter={(value) => `${value}%`}
+            />
+
+            <Line
+              type="monotone"
+              dataKey="umidade"
+              stroke="#8884d8"
+              dot={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      )}
+    </>
   );
 }
 
-export default Temperatura;
+export default Historico;
